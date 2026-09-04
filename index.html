@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKDSE Factorization & Expansion Revision Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .heart-bounce { animation: bounce 1s infinite; }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20%) scale(1.1); }
+        }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .toast {
+            min-width: 250px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.info { background-color: #3b82f6; }
+        .toast.fade-out { animation: fadeOut 0.5s ease-in forwards; }
+        
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(100%); }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px;}
+        ::-webkit-scrollbar-track { background: rgba(30, 41, 59, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+        .format-btn.active {
+            border-color: #f59e0b !important;
+            background-color: rgba(245, 158, 11, 0.2) !important;
+            color: #fde68a !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4 selection:bg-amber-500 selection:text-white">
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div id="login-screen" class="w-full max-w-md glass-panel rounded-3xl p-8 shadow-2xl transition-all duration-500">
+        <div class="text-center mb-8">
+            <div class="text-5xl mb-4">🚀</div>
+            <h1 class="text-2xl font-bold text-white mb-2">HKDSE Mathematics</h1>
+            <h2 class="text-amber-400 font-semibold tracking-wide uppercase text-sm">Factorization & Expansion Revision</h2>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Class (e.g., 4A)</label>
+                <input type="text" id="student-class" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 uppercase" placeholder="4A">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Class Number</label>
+                <input type="number" id="student-no" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500" placeholder="12">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-400 mb-1">Name</label>
+                <input type="text" id="student-name" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500" placeholder="Chan Tai Man">
+            </div>
+            <button onclick="login()" class="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-4 rounded-lg transition shadow-lg shadow-amber-500/20 active:scale-95">
+                Start Mission
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboard-screen" class="hidden w-full max-w-3xl flex flex-col gap-6 transition-all duration-500">
+        
+        <!-- Header -->
+        <div class="glass-panel rounded-2xl p-6 flex justify-between items-center shadow-xl">
+            <div>
+                <h2 class="text-2xl font-bold text-white" id="display-name">Welcome, Student</h2>
+                <p class="text-slate-400 text-sm">Class: <span id="display-class" class="text-amber-400 font-semibold"></span> | No: <span id="display-no" class="text-amber-400 font-semibold"></span></p>
+            </div>
+            <button onclick="logout()" class="text-slate-400 hover:text-white transition text-sm">
+                Switch User 🚪
+            </button>
+        </div>
+
+        <!-- Completion Passport -->
+        <div class="glass-panel rounded-2xl p-6 shadow-xl border border-amber-500/30 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none text-8xl">🎓</div>
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-slate-700/60 pb-4">
+                <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+                    🎓 Completion Passport (學習記錄卡)
+                </h3>
+                <div class="flex flex-wrap gap-2 z-10 justify-end">
+                    <button id="btn-submit-teacher" onclick="submitToTeacher()" class="bg-blue-600 hover:bg-blue-500 border border-blue-400 text-white px-3 py-2 rounded-lg font-semibold transition shadow-lg shadow-blue-500/20 text-sm flex items-center gap-2 active:scale-95">
+                        <span>Submit to Teacher</span> 📧
+                    </button>
+                    <button onclick="resetBadges()" class="bg-slate-700 hover:bg-slate-600 border border-slate-500 text-slate-200 px-3 py-2 rounded-lg transition text-sm active:scale-95">
+                        Reset 🔄
+                    </button>
+                </div>
+            </div>
+
+            <!-- Score Board -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
+                <div class="bg-slate-800/80 rounded-xl p-4 text-center border border-slate-700 transition duration-300" id="badge-card-1">
+                    <div class="text-3xl mb-2" id="badge-icon-1">🔒</div>
+                    <div class="font-bold text-slate-200">Level 1</div>
+                    <div class="text-xs text-slate-400 mb-2">Expansion</div>
+                    <div id="badge-status-1" class="text-sm font-semibold text-slate-500">Not Attempted</div>
+                    <div class="mt-2 inline-flex items-center gap-1 bg-slate-900/80 border border-amber-500/30 rounded-full px-3 py-1">
+                        <span class="text-xs text-amber-300 font-bold">⭐ <span id="score-1">0</span> marks</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/80 rounded-xl p-4 text-center border border-slate-700 transition duration-300" id="badge-card-2">
+                    <div class="text-3xl mb-2" id="badge-icon-2">🔒</div>
+                    <div class="font-bold text-slate-200">Level 2</div>
+                    <div class="text-xs text-slate-400 mb-2">Factorization</div>
+                    <div id="badge-status-2" class="text-sm font-semibold text-slate-500">Not Attempted</div>
+                    <div class="mt-2 inline-flex items-center gap-1 bg-slate-900/80 border border-amber-500/30 rounded-full px-3 py-1">
+                        <span class="text-xs text-amber-300 font-bold">⭐ <span id="score-2">0</span> marks</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/80 rounded-xl p-4 text-center border border-slate-700 transition duration-300" id="badge-card-3">
+                    <div class="text-3xl mb-2" id="badge-icon-3">🔒</div>
+                    <div class="font-bold text-slate-200">Level 3</div>
+                    <div class="text-xs text-slate-400 mb-2">Paper 1 (a)(b)(c)</div>
+                    <div id="badge-status-3" class="text-sm font-semibold text-slate-500">Not Attempted</div>
+                    <div class="mt-2 inline-flex items-center gap-1 bg-slate-900/80 border border-amber-500/30 rounded-full px-3 py-1">
+                        <span class="text-xs text-amber-300 font-bold">⭐ <span id="score-3">0</span> marks</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 relative z-10 flex justify-center">
+                <div class="bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 border border-amber-500/40 rounded-full px-6 py-2 flex items-center gap-3">
+                    <span class="text-lg">🏆</span>
+                    <span class="text-sm font-bold text-amber-300">Total Marks: <span id="total-marks" class="text-xl font-extrabold text-yellow-300">0</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel rounded-2xl p-6 shadow-xl">
+            <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 text-center">
+                📋 Practice Format (選取題目模式)
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button id="mode-all" onclick="selectFormatMode('all')" class="format-btn active border-2 border-slate-700 bg-slate-800 text-slate-400 py-2.5 px-3 rounded-lg font-bold text-sm transition active:scale-95">
+                    Mixed (混合)
+                </button>
+                <button id="mode-mc" onclick="selectFormatMode('mc')" class="format-btn border-2 border-slate-700 bg-slate-800 text-slate-400 py-2.5 px-3 rounded-lg font-bold text-sm transition active:scale-95">
+                    MC Only (選擇題)
+                </button>
+                <button id="mode-fill" onclick="selectFormatMode('fill')" class="format-btn border-2 border-slate-700 bg-slate-800 text-slate-400 py-2.5 px-3 rounded-lg font-bold text-sm transition active:scale-95">
+                    Conventional (填空/問答)
+                </button>
+            </div>
+            <p id="mode-desc" class="text-xs text-slate-400 mt-3 text-center italic">
+                Will mix Multiple Choice & Conventional Fill-in questions automatically.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button onclick="startGame(1)" class="glass-panel rounded-2xl p-6 text-left hover:-translate-y-1 transition duration-300 border-t-4 border-green-500 group relative overflow-hidden">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-xl text-white group-hover:text-green-400 transition">Level 1</h3>
+                    <span class="text-2xl group-hover:scale-110 transition">🟢</span>
+                </div>
+                <p class="text-slate-400 text-sm relative z-10">Expansion: remove brackets & simplify. \(a(x+y)\), \((x+a)(x+b)\), \((x+a)^2\). (Core)</p>
+            </button>
+
+            <button onclick="startGame(2)" class="glass-panel rounded-2xl p-6 text-left hover:-translate-y-1 transition duration-300 border-t-4 border-amber-500 group relative overflow-hidden">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-xl text-white group-hover:text-amber-400 transition">Level 2</h3>
+                    <span class="text-2xl group-hover:scale-110 transition">🟡</span>
+                </div>
+                <p class="text-slate-400 text-sm relative z-10">Factorization: common factor, cross method & identities.</p>
+            </button>
+
+            <button onclick="startGame(3)" class="glass-panel rounded-2xl p-6 text-left hover:-translate-y-1 transition duration-300 border-t-4 border-red-500 group relative overflow-hidden">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-xl text-white group-hover:text-red-400 transition">Level 3</h3>
+                    <span class="text-2xl group-hover:scale-110 transition">🔴</span>
+                </div>
+                <p class="text-slate-400 text-sm relative z-10">Multi-part (a)(b)(c) factorization, Paper 1 style (DSE P1 Q3-Q4).</p>
+            </button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="hidden w-full max-w-2xl flex flex-col gap-4">
+        
+        <div class="flex justify-between items-center bg-slate-800 rounded-full px-6 py-3 shadow-lg border border-slate-700">
+            <div class="font-bold text-amber-400" id="level-indicator">Level 1</div>
+            <div class="flex gap-1 text-xl" id="lives-container">
+                <!-- Hearts injected here -->
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="text-slate-300 font-mono bg-slate-900 px-3 py-1 rounded-full text-sm font-semibold">
+                    Q: <span id="q-counter">1/5</span>
+                </div>
+                <div class="text-amber-300 font-mono bg-slate-900 border border-amber-500/30 px-3 py-1 rounded-full text-sm font-semibold">
+                    ⭐ <span id="live-score">0</span>
+                </div>
+            </div>
+            <button onclick="quitGame()" class="text-slate-500 hover:text-red-400 transition text-xs font-bold uppercase tracking-wider">
+                Abort
+            </button>
+        </div>
+
+        <div class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl text-center min-h-[350px] flex flex-col relative w-full overflow-hidden" id="main-game-area">
+            
+            <div class="w-full flex justify-between items-center mb-2 border-b border-slate-700/50 pb-3">
+                <div class="flex flex-col text-left">
+                    <h3 class="text-slate-300 text-sm font-semibold" id="question-instruction">Expand and simplify the expression:</h3>
+                    <div class="flex gap-3 flex-wrap">
+                        <span class="text-xs text-amber-400 font-semibold" id="format-hint"></span>
+                        <span class="text-xs text-sky-400 font-semibold" id="paper-hint"></span>
+                        <span class="text-xs text-emerald-400 font-semibold" id="part-label"></span>
+                    </div>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="askAITutor()" class="text-[10px] sm:text-xs bg-purple-600/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded-full hover:bg-purple-600/40 transition font-bold active:scale-95 flex items-center gap-1">
+                        Ask AI ✨
+                    </button>
+                    <button onclick="toggleCheatSheet()" class="text-[10px] sm:text-xs bg-blue-600/20 text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-full hover:bg-blue-600/40 transition active:scale-95 flex items-center gap-1">
+                        Formulas 💡
+                    </button>
+                </div>
+            </div>
+
+            <div id="question-display" class="text-3xl sm:text-4xl text-white mb-6 overflow-x-auto py-6 flex items-center justify-center min-h-[120px]">
+                <!-- MathJax renders here -->
+            </div>
+            
+            <div id="mc-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 hidden w-full mt-auto">
+                <button onclick="submitMCAnswer(0)" class="option-btn bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl p-4 text-xl transition-all shadow-md active:scale-95 min-h-[64px] flex items-center justify-center"></button>
+                <button onclick="submitMCAnswer(1)" class="option-btn bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl p-4 text-xl transition-all shadow-md active:scale-95 min-h-[64px] flex items-center justify-center"></button>
+                <button onclick="submitMCAnswer(2)" class="option-btn bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl p-4 text-xl transition-all shadow-md active:scale-95 min-h-[64px] flex items-center justify-center"></button>
+                <button onclick="submitMCAnswer(3)" class="option-btn bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl p-4 text-xl transition-all shadow-md active:scale-95 min-h-[64px] flex items-center justify-center"></button>
+            </div>
+
+            <div id="conventional-area" class="hidden flex flex-col items-center gap-4 w-full max-w-md mx-auto mt-auto">
+                <p class="text-[11px] text-slate-400 text-center leading-tight">
+                    Use <code class='bg-slate-800 px-1 py-0.5 rounded text-amber-300 font-mono'>^</code> for powers & <code class='bg-slate-800 px-1 py-0.5 rounded text-amber-300 font-mono'>( )</code> for brackets.<br>
+                    E.g. <span class='font-mono text-emerald-400'>x^2+5x+6</span> or <span class='font-mono text-emerald-400'>(x+2)(x+3)</span> or <span class='font-mono text-emerald-400'>(x+3)^2</span>
+                </p>
+
+                <div class="flex gap-2 w-full">
+                    <input type="text" id="conventional-input" placeholder="e.g. (x+2)(x+3)" class="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-lg font-mono text-white outline-none focus:border-amber-500 transition shadow-inner" oninput="updateLivePreview()" onkeypress="handleEnter(event)">
+                    <button onclick="submitFillAnswer()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-6 rounded-lg text-base transition shadow-md active:scale-95">
+                        Submit
+                    </button>
+                </div>
+
+                <div id="helper-buttons" class="flex flex-wrap gap-2 justify-center w-full mt-1">
+                    <!-- dynamically injected helper buttons -->
+                </div>
+
+                <div class="w-full p-4 bg-slate-900/60 border border-slate-700 rounded-lg text-center min-h-[80px] flex flex-col justify-center items-center mt-2">
+                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Live Math Preview</span>
+                    <div id="math-preview" class="text-xl text-slate-300 min-h-[30px] flex items-center justify-center">\( \text{Empty} \)</div>
+                </div>
+            </div>
+
+            <!-- Level 3: multi-part (a)(b)(c) blocks, each with its own question + answer area -->
+            <div id="l3-area" class="hidden w-full mt-auto">
+                <div id="l3-blocks" class="flex flex-col gap-4"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CHEAT SHEET MODAL -->
+    <div id="cheat-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-opacity" onclick="if(event.target===this) toggleCheatSheet()">
+        <div class="glass-panel p-6 rounded-2xl border border-slate-600 max-w-sm w-full shadow-2xl">
+            <h3 class="text-2xl font-bold text-amber-400 mb-4 border-b border-slate-700 pb-2">Expansion & Factorization</h3>
+            <ul class="space-y-4 text-lg font-serif">
+                <li class="flex justify-between items-center"><span class="text-slate-300 text-sm font-sans">Removing brackets:</span> <span class="bg-slate-900/80 px-2 py-1 rounded text-white border border-slate-700">\(a(x+y) = ax+ay\)</span></li>
+                <li class="flex justify-between items-center"><span class="text-slate-300 text-sm font-sans">Cross expansion:</span> <span class="bg-slate-900/80 px-2 py-1 rounded text-white border border-slate-700">\((x+a)(x+b) = x^2+(a+b)x+ab\)</span></li>
+                <li class="flex justify-between items-center"><span class="text-slate-300 text-sm font-sans">Common factor:</span> <span class="bg-slate-900/80 px-2 py-1 rounded text-white border border-slate-700">\(ax+ay = a(x+y)\)</span></li>
+                <li class="flex justify-between items-center"><span class="text-slate-300 text-sm font-sans">Diff. of 2 squares:</span> <span class="bg-slate-900/80 px-2 py-1 rounded text-white border border-slate-700">\(a^2-b^2 = (a+b)(a-b)\)</span></li>
+                <li class="flex justify-between items-center"><span class="text-slate-300 text-sm font-sans">Perfect square:</span> <span class="bg-slate-900/80 px-2 py-1 rounded text-white border border-slate-700">\(a^2+2ab+b^2 = (a+b)^2\)</span></li>
+                <li class="flex justify-between items-center"><span class="text-slate-300 text-sm font-sans">Perfect square:</span> <span class="bg-slate-900/80 px-2 py-1 rounded text-white border border-slate-700">\(a^2-2ab+b^2 = (a-b)^2\)</span></li>
+            </ul>
+            <button onclick="toggleCheatSheet()" class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg active:scale-95 transition">Close</button>
+        </div>
+    </div>
+
+    <!-- AI TUTOR MODAL -->
+    <div id="ai-tutor-modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 p-4 backdrop-blur-sm transition-opacity" onclick="if(event.target===this) closeAITutor()">
+        <div class="glass-panel border border-purple-500/50 max-w-lg w-full rounded-2xl shadow-2xl p-6 flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-300 flex items-center gap-2">
+                    <span>✨ AI Tutor (HKDSE 導師)</span>
+                </h3>
+                <button onclick="closeAITutor()" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div id="ai-content-area" class="flex-1 overflow-y-auto pr-2 space-y-4 text-slate-200 text-sm sm:text-base leading-relaxed">
+                <!-- AI tutor contents rendered here -->
+            </div>
+            
+            <button onclick="closeAITutor()" class="mt-6 w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl transition active:scale-95">
+                Got it, thanks!
+            </button>
+        </div>
+    </div>
+
+    <!-- WRONG ANSWER TECHNIQUE REFLECTION MODAL -->
+    <div id="wrong-reflection-modal" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center z-[60] p-4 backdrop-blur-md transition-opacity">
+        <div class="glass-panel border-2 border-red-500/40 max-w-md w-full rounded-2xl shadow-2xl p-6 flex flex-col">
+            <div class="flex items-center gap-3 mb-4 border-b border-slate-700 pb-3">
+                <span class="text-3xl">🛑</span>
+                <h3 class="text-xl font-bold text-red-400">Wait! Let's Reflect</h3>
+            </div>
+            <p class="text-slate-300 mb-6 text-sm">You got that one wrong. Before moving on, which <strong>technique</strong> was primarily needed to solve that question?</p>
+
+            <div class="space-y-3">
+                <button onclick="submitWrongReflection('expand_bracket')" class="w-full text-left px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl transition active:scale-95 flex items-center justify-between group">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-white">Removing Brackets (Expansion)</span>
+                    <span class="font-serif bg-slate-900 px-2 py-1 rounded text-xs text-amber-300">\(a(x+y) = ax+ay\)</span>
+                </button>
+                <button onclick="submitWrongReflection('common_factor')" class="w-full text-left px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl transition active:scale-95 flex items-center justify-between group">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-white">Taking Out Common Factor</span>
+                    <span class="font-serif bg-slate-900 px-2 py-1 rounded text-xs text-amber-300">\(ax+ay = a(x+y)\)</span>
+                </button>
+                <button onclick="submitWrongReflection('cross_method')" class="w-full text-left px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl transition active:scale-95 flex items-center justify-between group">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-white">Cross Method</span>
+                    <span class="font-serif bg-slate-900 px-2 py-1 rounded text-xs text-amber-300">\((x+a)(x+b)\)</span>
+                </button>
+                <button onclick="submitWrongReflection('diff_squares')" class="w-full text-left px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl transition active:scale-95 flex items-center justify-between group">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-white">Difference of Two Squares</span>
+                    <span class="font-serif bg-slate-900 px-2 py-1 rounded text-xs text-amber-300">\(a^2-b^2 = (a+b)(a-b)\)</span>
+                </button>
+                <button onclick="submitWrongReflection('perfect_square')" class="w-full text-left px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl transition active:scale-95 flex items-center justify-between group">
+                    <span class="text-sm font-semibold text-slate-200 group-hover:text-white">Perfect Square Identity</span>
+                    <span class="font-serif bg-slate-900 px-2 py-1 rounded text-xs text-amber-300">\(a^2 \pm 2ab + b^2 = (a \pm b)^2\)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WRONG ANSWER FEEDBACK MODAL -->
+    <div id="feedback-toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-red-950/90 backdrop-blur-md border-2 border-red-500 text-red-100 px-6 py-4 rounded-xl shadow-2xl hidden z-50 text-center max-w-sm w-full transition-all">
+        <div class="flex items-center justify-center gap-2 mb-1">
+            <span class="text-2xl">❌</span>
+            <p class="font-bold text-lg">Incorrect Answer!</p>
+        </div>
+        <p class="text-sm text-red-300 mt-1">Check the signs and coefficients — try expanding your answer back to verify!</p>
+    </div>
+
+    <script>
+        // Updated Google Apps Script URL with tracking enabled
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzIabw9ioY8rLwZKpDwaCtimNRny3qA0PIcOmZjfiU/dev';
+
+        let studentProfile = null;
+        let badgeRecords = { level1: false, level2: false, level3: false };
+        let currentLevel = 1;
+        let currentQuestionIndex = 0;
+        let lives = 3;
+        let currentQuestions = [];
+        let selectedFormat = 'all'; // 'all', 'mc', 'fill'
+        let currentQuestionMode = 'mc'; // state for current specific question
+        let currentSets = [];    // Level 3: array of question sets (each set = array of parts)
+        let currentSetIndex = 0;
+        let activePart = null;   // the part currently being answered (for reflection / AI tutor)
+        
+        // --- SCORE BOARD ---
+        // Full marks per level, marks deducted per heart lost. Marks accumulate across replays.
+        const MARKS = {
+            1: { full: 3, perHeart: 1 },
+            2: { full: 9, perHeart: 3 },
+            3: { full: 15, perHeart: 5 }
+        };
+        let scoreTotals = { level1: 0, level2: 0, level3: 0 };
+        
+        // Tracking variables for correct percentage
+        let levelStats = { 
+            level1: { correct: 0, total: 0 }, 
+            level2: { correct: 0, total: 0 }, 
+            level3: { correct: 0, total: 0 } 
+        };
+
+        // --- MATH GENERATOR ENGINE (Factorization & Expansion, DSE Paper 1/2 style) ---
+        const MathGen = {
+            rand: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+            shuffle: (array) => [...array].sort(() => Math.random() - 0.5),
+            c: (coef, v) => coef === 1 ? v : (coef === -1 ? `-${v}` : `${coef}${v}`),
+            
+            // Level 1: Expansion — remove brackets & simplify (14 question types)
+            generateL1: function() {
+                const type = this.rand(0, 13);
+                const v = ['x', 'y', 'a', 'm', 'n'][this.rand(0, 4)];
+                const w = v === 'x' ? 'y' : 'x'; // second variable for two-variable types
+                let qText = "", ansStr = "", ansTex = "", opts = [];
+                
+                if (type === 0) {
+                    // a(bx + c) — Paper 1 style
+                    let a = this.rand(2, 6), b = this.rand(2, 5), c = this.rand(2, 10);
+                    let p = a * b, q = a * c;
+                    ansStr = `${p}${v}+${q}`;
+                    ansTex = `${p}${v}+${q}`;
+                    qText = `\\text{Expand and simplify } ${a}(${b}${v}+${c})`;
+                    opts = [ansTex, `${p}${v}+${c}`, `${p + q}${v}`, `${p}${v}+${q + 1}`];
+                } else if (type === 1) {
+                    // -a(bx - c) — sign trap
+                    let a = this.rand(2, 6), b = this.rand(2, 5), c = this.rand(2, 10);
+                    let p = -a * b, q = a * c;
+                    ansStr = `${p}${v}+${q}`;
+                    ansTex = `${p}${v}+${q}`;
+                    qText = `\\text{Expand and simplify } -${a}(${b}${v}-${c})`;
+                    opts = [ansTex, `${-p}${v}-${q}`, `${p + 1}${v}+${q}`, `${p}${v}-${q}`];
+                } else if (type === 2) {
+                    // (x+a)(x+b), both positive — Paper 2 style
+                    let a = this.rand(2, 8), b = this.rand(2, 8);
+                    while (a + b === a * b || a === b) { a = this.rand(2, 8); b = this.rand(2, 8); }
+                    if (a > b) { const t = a; a = b; b = t; } // avoid (x+b)(x+a) duplicates
+                    let s = a + b, pr = a * b;
+                    ansStr = `${v}^2+${s}${v}+${pr}`;
+                    ansTex = `${v}^2+${s}${v}+${pr}`;
+                    qText = `\\text{Expand and simplify } (${v}+${a})(${v}+${b})`;
+                    opts = [ansTex, `${v}^2+${pr}${v}+${s}`, `${v}^2+${pr}`, `${v}^2+${s}${v}+${pr + 1}`];
+                } else if (type === 3) {
+                    // (x+a)(x-b), a > b
+                    let a = this.rand(3, 9), b = this.rand(2, a - 1);
+                    let s = a - b, pr = a * b;
+                    ansStr = `${v}^2+${this.c(s, v)}-${pr}`;
+                    ansTex = `${v}^2+${this.c(s, v)}-${pr}`;
+                    qText = `\\text{Expand and simplify } (${v}+${a})(${v}-${b})`;
+                    opts = [ansTex, `${v}^2-${this.c(a + b, v)}-${pr}`, `${v}^2+${this.c(s, v)}+${pr}`, `${v}^2-${pr}`];
+                } else if (type === 4) {
+                    // (2x+a)(x+b) — coefficient of x^2 not 1
+                    let a = this.rand(2, 6), b = this.rand(2, 6);
+                    let mid = 2 * b + a, cst = a * b;
+                    ansStr = `2${v}^2+${mid}${v}+${cst}`;
+                    ansTex = `2${v}^2+${mid}${v}+${cst}`;
+                    qText = `\\text{Expand and simplify } (2${v}+${a})(${v}+${b})`;
+                    opts = [ansTex, `2${v}^2+${a + b}${v}+${cst}`, `${v}^2+${mid}${v}+${cst}`, `2${v}^2+${mid}${v}+${cst + 1}`];
+                } else if (type === 5) {
+                    // (x+a)^2 — perfect square expansion
+                    let a = this.rand(3, 8);
+                    let s = 2 * a, pr = a * a;
+                    ansStr = `${v}^2+${s}${v}+${pr}`;
+                    ansTex = `${v}^2+${s}${v}+${pr}`;
+                    qText = `\\text{Expand and simplify } (${v}+${a})^2`;
+                    opts = [ansTex, `${v}^2+${pr}`, `${v}^2+${a}${v}+${pr}`, `${v}^2+${s}${v}+${s}`];
+                } else if (type === 6) {
+                    // (x-a)^2 — perfect square expansion (minus)
+                    let a = this.rand(2, 8);
+                    let s = 2 * a, pr = a * a;
+                    ansStr = `${v}^2-${s}${v}+${pr}`;
+                    ansTex = `${v}^2-${s}${v}+${pr}`;
+                    qText = `\\text{Expand and simplify } (${v}-${a})^2`;
+                    opts = [ansTex, `${v}^2-${pr}`, `${v}^2-${a}${v}+${pr}`, `${v}^2-${s}${v}-${s}`];
+                } else if (type === 7) {
+                    // (x+a)(x-a) — difference of two squares
+                    let a = this.rand(3, 10);
+                    ansStr = `${v}^2-${a * a}`;
+                    ansTex = `${v}^2-${a * a}`;
+                    qText = `\\text{Expand and simplify } (${v}+${a})(${v}-${a})`;
+                    opts = [ansTex, `${v}^2+${a * a}`, `${v}^2-${2 * a}`, `${v}^2-${a * a + 1}`];
+                } else if (type === 8) {
+                    // (x-a)(x-b), both negative — expansion
+                    let a = this.rand(2, 7), b = this.rand(2, 7);
+                    while (a === b) { b = this.rand(2, 7); }
+                    if (a > b) { const t = a; a = b; b = t; }
+                    let s = a + b, pr = a * b;
+                    ansStr = `${v}^2-${s}${v}+${pr}`;
+                    ansTex = `${v}^2-${s}${v}+${pr}`;
+                    qText = `\\text{Expand and simplify } (${v}-${a})(${v}-${b})`;
+                    opts = [ansTex, `${v}^2+${s}${v}+${pr}`, `${v}^2-${pr}`, `${v}^2-${s}${v}-${pr}`];
+                } else if (type === 9) {
+                    // (ax+b)(cx+d) — two non-monic brackets
+                    let a = this.rand(2, 3), b = this.rand(2, 5), c = this.rand(2, 3), d = this.rand(2, 5);
+                    while (a === c && b === d) { d = this.rand(2, 5); }
+                    let x2 = a * c, x1 = a * d + b * c, cst = b * d;
+                    ansStr = `${x2}${v}^2+${x1}${v}+${cst}`;
+                    ansTex = `${x2}${v}^2+${x1}${v}+${cst}`;
+                    qText = `\\text{Expand and simplify } (${a}${v}+${b})(${c}${v}+${d})`;
+                    opts = [ansTex, `${x2}${v}^2+${b + d}${v}+${cst}`, `${a * c + 1}${v}^2+${x1}${v}+${cst}`, `${x2}${v}^2+${x1}${v}+${cst + 1}`];
+                } else if (type === 10) {
+                    // (x+a)(x-b) with b > a → negative x coefficient
+                    let b = this.rand(3, 9), a = this.rand(2, b - 1);
+                    let s = a - b, pr = a * b;
+                    ansStr = `${v}^2${this.c(s, v)}-${pr}`;
+                    ansTex = `${v}^2${this.c(s, v)}-${pr}`;
+                    qText = `\\text{Expand and simplify } (${v}+${a})(${v}-${b})`;
+                    opts = [ansTex, `${v}^2+${this.c(b - a, v)}-${pr}`, `${v}^2${this.c(s, v)}+${pr}`, `${v}^2-${pr}`];
+                } else if (type === 11) {
+                    // (ax+b)^2 — perfect square with coefficient
+                    let a = this.rand(2, 4), b = this.rand(2, 5);
+                    while (2 * a === b) { b = this.rand(2, 5); }
+                    let x2 = a * a, x1 = 2 * a * b, cst = b * b;
+                    ansStr = `${x2}${v}^2+${x1}${v}+${cst}`;
+                    ansTex = `${x2}${v}^2+${x1}${v}+${cst}`;
+                    qText = `\\text{Expand and simplify } (${a}${v}+${b})^2`;
+                    opts = [ansTex, `${x2}${v}^2+${cst}`, `${x2}${v}^2+${a * b}${v}+${cst}`, `${x2}${v}^2+${x1}${v}+${cst + 1}`];
+                } else if (type === 12) {
+                    // (x+a)(x+b)(x+c) — three brackets? No: (x+a)(x-b)(x+c) too hard. Use x(x+a)(x+b)
+                    let a = this.rand(2, 6), b = this.rand(2, 6);
+                    while (a === b) { b = this.rand(2, 6); }
+                    let s = a + b, pr = a * b;
+                    ansStr = `${v}^3+${s}${v}^2+${pr}${v}`;
+                    ansTex = `${v}^3+${s}${v}^2+${pr}${v}`;
+                    qText = `\\text{Expand and simplify } ${v}(${v}+${a})(${v}+${b})`;
+                    opts = [ansTex, `${v}^3+${pr}${v}^2+${s}${v}`, `${v}^3+${s}${v}^2+${pr}`, `${v}^3+${s}${v}^2+${pr}${v}+${pr}`];
+                } else {
+                    // two-variable: (x+ay)(x+by) expansion — cross terms
+                    let a = this.rand(2, 5), b = this.rand(2, 5);
+                    while (a === b) { b = this.rand(2, 5); }
+                    let s = a + b, pr = a * b;
+                    ansStr = `${v}^2+${s}${v}${w}+${pr}${w}^2`;
+                    ansTex = `${v}^2+${s}${v}${w}+${pr}${w}^2`;
+                    qText = `\\text{Expand and simplify } (${v}+${a}${w})(${v}+${b}${w})`;
+                    opts = [ansTex, `${v}^2+${pr}${v}${w}+${s}${w}^2`, `${v}^2+${s}${v}${w}+${s}${w}^2`, `${v}^2+${pr}${w}^2`];
+                }
+                
+                return {
+                    instruction: "Expand and simplify the expression:",
+                    paper: (type === 0 || type === 1) ? "Paper 1" : "Paper 2",
+                    text: `$ ${qText} $`, answerStr: ansStr, mcAnswerStr: ansTex,
+                    variables: (type === 13) ? [v, w] : [v], options: this.shuffle(opts.map(o => `$ ${o} $`)),
+                    firstStepLaw: 'expand_bracket'
+                };
+            },
+            
+            // Level 2: Factorization — common factor, grouping, cross method & identities (merged, 17 types)
+            generateL2: function() {
+                const type = this.rand(0, 16);
+                const v = ['x', 'y', 'm', 'n', 'a'][this.rand(0, 4)];
+                const u = v === 'x' ? 'y' : 'x';
+                let qText = "", ansStr = "", ansTex = "", opts = [], law = 'common_factor';
+                const instruction = "Factorize the expression completely:";
+                
+                if (type === 0) {
+                    // common factor: A x^2 + B x = kx(px + q) — Paper 1 style
+                    let k = this.rand(2, 4), p = this.rand(2, 5), q = this.rand(2, 9);
+                    while (this.gcd(p, q) !== 1) { p = this.rand(2, 5); q = this.rand(2, 9); }
+                    let A = k * p, B = k * q;
+                    ansTex = `${k}${v}(${p}${v}+${q})`;
+                    ansStr = `${k}${v}(${p}${v}+${q})`;
+                    qText = `\\text{Factorize } ${A}${v}^2+${B}${v}`;
+                    opts = [ansTex, `${k}(${p}${v}^2+${q}${v})`, `${v}(${A}${v}+${B})`, `${k}${v}(${p}${v}+${q}+1)`];
+                } else if (type === 1) {
+                    // x^2 + px + q = (x+a)(x+b), all positive — Paper 2 style
+                    let a = this.rand(2, 9), b = this.rand(2, 9);
+                    while (a === b) { a = this.rand(2, 9); b = this.rand(2, 9); }
+                    let s = a + b, pr = a * b;
+                    ansTex = `(${v}+${a})(${v}+${b})`;
+                    ansStr = `(${v}+${a})(${v}+${b})`;
+                    qText = `\\text{Factorize } ${v}^2+${s}${v}+${pr}`;
+                    opts = [ansTex, `(${v}-${a})(${v}-${b})`, `(${v}+${a})(${v}-${b})`, `(${v}+${pr})(${v}+1)`];
+                    law = 'cross_method';
+                } else if (type === 2) {
+                    // x^2 - px + q = (x-a)(x-b)
+                    let a = this.rand(2, 9), b = this.rand(2, 9);
+                    while (a === b) { a = this.rand(2, 9); b = this.rand(2, 9); }
+                    let s = a + b, pr = a * b;
+                    ansTex = `(${v}-${a})(${v}-${b})`;
+                    ansStr = `(${v}-${a})(${v}-${b})`;
+                    qText = `\\text{Factorize } ${v}^2-${s}${v}+${pr}`;
+                    opts = [ansTex, `(${v}+${a})(${v}+${b})`, `(${v}-${a})(${v}+${b})`, `(${v}+${s})(${v}-${s})`];
+                    law = 'cross_method';
+                } else if (type === 3) {
+                    // x^2 + px - q = (x+a)(x-b), a > b
+                    let a = this.rand(3, 10), b = this.rand(2, a - 1);
+                    let s = a - b, pr = a * b;
+                    ansTex = `(${v}+${a})(${v}-${b})`;
+                    ansStr = `(${v}+${a})(${v}-${b})`;
+                    qText = `\\text{Factorize } ${v}^2+${this.c(s, v)}-${pr}`;
+                    opts = [ansTex, `(${v}-${a})(${v}+${b})`, `(${v}+${a})(${v}+${b})`, `(${v}-${a})(${v}-${b})`];
+                    law = 'cross_method';
+                } else if (type === 4) {
+                    // x^2 - px - q = (x-a)(x+b), a > b
+                    let a = this.rand(3, 10), b = this.rand(2, a - 1);
+                    let s = a - b, pr = a * b;
+                    ansTex = `(${v}-${a})(${v}+${b})`;
+                    ansStr = `(${v}-${a})(${v}+${b})`;
+                    qText = `\\text{Factorize } ${v}^2-${this.c(s, v)}-${pr}`;
+                    opts = [ansTex, `(${v}+${a})(${v}-${b})`, `(${v}-${a})(${v}-${b})`, `(${v}+${a})(${v}+${b})`];
+                    law = 'cross_method';
+                } else if (type === 5) {
+                    // grouping with sign variants — Paper 1 style
+                    const gv = this.rand(0, 2);
+                    if (gv === 0) {
+                        // ax + ay + bx + by = (a+b)(x+y)
+                        ansTex = `(a+b)(x+y)`;
+                        ansStr = `(a+b)(x+y)`;
+                        qText = `\\text{Factorize } ax+ay+bx+by`;
+                        opts = [ansTex, `(a+b)(x-y)`, `(a-b)(x+y)`, `(a-b)(x-y)`];
+                    } else if (gv === 1) {
+                        // ax - ay + bx - by = (a+b)(x-y)
+                        ansTex = `(a+b)(x-y)`;
+                        ansStr = `(a+b)(x-y)`;
+                        qText = `\\text{Factorize } ax-ay+bx-by`;
+                        opts = [ansTex, `(a+b)(x+y)`, `(a-b)(x-y)`, `(a-b)(x+y)`];
+                    } else {
+                        // ax + ay - bx - by = (a-b)(x+y)
+                        ansTex = `(a-b)(x+y)`;
+                        ansStr = `(a-b)(x+y)`;
+                        qText = `\\text{Factorize } ax+ay-bx-by`;
+                        opts = [ansTex, `(a-b)(x-y)`, `(a+b)(x+y)`, `(a+b)(x-y)`];
+                    }
+                } else if (type === 6) {
+                    // x^2 - n^2 — Paper 1 style
+                    let n = this.rand(3, 12);
+                    ansTex = `(${v}+${n})(${v}-${n})`;
+                    ansStr = `(${v}+${n})(${v}-${n})`;
+                    qText = `\\text{Factorize } ${v}^2-${n * n}`;
+                    opts = [ansTex, `(${v}-${n})(${v}-${n})`, `(${v}+${n})^2`, `${v}(${v}-${n * n})`];
+                    law = 'diff_squares';
+                } else if (type === 7) {
+                    // m^2 x^2 - n^2 = (mx+n)(mx-n) — Paper 2 style
+                    let m = this.rand(2, 5), n = this.rand(2, 8);
+                    while (this.gcd(m, n) !== 1) { m = this.rand(2, 5); n = this.rand(2, 8); }
+                    ansTex = `(${m}${v}+${n})(${m}${v}-${n})`;
+                    ansStr = `(${m}${v}+${n})(${m}${v}-${n})`;
+                    qText = `\\text{Factorize } ${m * m}${v}^2-${n * n}`;
+                    opts = [ansTex, `(${m}${v}-${n})(${m}${v}-${n})`, `(${m}${v}+${n})^2`, `(${m}${v}+${n * n})(${m}${v}-${n * n})`];
+                    law = 'diff_squares';
+                } else if (type === 8) {
+                    // perfect square x^2 ± 2nx + n^2 = (x±n)^2
+                    let n = this.rand(3, 8);
+                    const sgn = Math.random() > 0.5 ? '+' : '-';
+                    ansTex = `(${v}${sgn}${n})^2`;
+                    ansStr = `(${v}${sgn}${n})^2`;
+                    qText = `\\text{Factorize } ${v}^2${sgn}${2 * n}${v}+${n * n}`;
+                    opts = [ansTex, `(${v}${sgn === '+' ? '-' : '+'}${n})^2`, `(${v}+${n})(${v}-${n})`, `(${v}${sgn}${n * n})^2`];
+                    law = 'perfect_square';
+                } else if (type === 9) {
+                    // common factor with minus: A x^2 - B x = kx(px - q)
+                    let k = this.rand(2, 4), p = this.rand(2, 5), q = this.rand(2, 9);
+                    while (this.gcd(p, q) !== 1) { p = this.rand(2, 5); q = this.rand(2, 9); }
+                    let A = k * p, B = k * q;
+                    ansTex = `${k}${v}(${p}${v}-${q})`;
+                    ansStr = `${k}${v}(${p}${v}-${q})`;
+                    qText = `\\text{Factorize } ${A}${v}^2-${B}${v}`;
+                    opts = [ansTex, `${k}(${p}${v}^2-${q}${v})`, `${v}(${A}${v}-${B})`, `${k}${v}(${p}${v}+${q})`];
+                } else if (type === 10) {
+                    // two-variable cross method: x^2 + (a+b)xy + ab y^2 = (x+ay)(x+by)
+                    let a = this.rand(2, 6), b = this.rand(2, 6);
+                    while (a === b) { b = this.rand(2, 6); }
+                    let s = a + b, pr = a * b;
+                    ansTex = `(${v}+${a}${u})(${v}+${b}${u})`;
+                    ansStr = `(${v}+${a}${u})(${v}+${b}${u})`;
+                    qText = `\\text{Factorize } ${v}^2+${s}${v}${u}+${pr}${u}^2`;
+                    opts = [ansTex, `(${v}-${a}${u})(${v}-${b}${u})`, `(${v}+${a}${u})(${v}-${b}${u})`, `(${v}+${pr}${u})(${v}+${u})`];
+                    law = 'cross_method';
+                } else if (type === 11) {
+                    // two-variable diff of squares: m^2 x^2 - n^2 y^2 = (mx+ny)(mx-ny)
+                    let m = this.rand(2, 4), n = this.rand(2, 7);
+                    while (this.gcd(m, n) !== 1) { m = this.rand(2, 4); n = this.rand(2, 7); }
+                    ansTex = `(${m}${v}+${n}${u})(${m}${v}-${n}${u})`;
+                    ansStr = `(${m}${v}+${n}${u})(${m}${v}-${n}${u})`;
+                    qText = `\\text{Factorize } ${m * m}${v}^2-${n * n}${u}^2`;
+                    opts = [ansTex, `(${m}${v}-${n}${u})(${m}${v}-${n}${u})`, `(${m}${v}+${n}${u})^2`, `(${n}${v}+${m}${u})(${n}${v}-${m}${u})`];
+                    law = 'diff_squares';
+                } else if (type === 12) {
+                    // perfect square with coefficient: (mx ± n)^2
+                    let m = this.rand(2, 4), n = this.rand(2, 6);
+                    while (this.gcd(m, n) !== 1) { m = this.rand(2, 4); n = this.rand(2, 6); }
+                    const sgn = Math.random() > 0.5 ? '+' : '-';
+                    ansTex = `(${m}${v}${sgn}${n})^2`;
+                    ansStr = `(${m}${v}${sgn}${n})^2`;
+                    qText = `\\text{Factorize } ${m * m}${v}^2${sgn}${2 * m * n}${v}+${n * n}`;
+                    opts = [ansTex, `(${m}${v}${sgn === '+' ? '-' : '+'}${n})^2`, `(${m}${v}+${n})(${m}${v}-${n})`, `(${m}${v}${sgn}${n * n})^2`];
+                    law = 'perfect_square';
+                } else if (type === 13) {
+                    // reversed diff of squares: a^2 - b^2 x^2 = (a - bx)(a + bx)
+                    let a = this.rand(3, 9), b = this.rand(2, 5);
+                    while (this.gcd(a, b) !== 1) { a = this.rand(3, 9); b = this.rand(2, 5); }
+                    ansTex = `(${a}-${b}${v})(${a}+${b}${v})`;
+                    ansStr = `(${a}-${b}${v})(${a}+${b}${v})`;
+                    qText = `\\text{Factorize } ${a * a}-${b * b}${v}^2`;
+                    opts = [ansTex, `(${a}-${b}${v})(${a}-${b}${v})`, `(${a}-${b})(${a}+${b})`, `(${a}-${b}${v})^2`];
+                    law = 'diff_squares';
+                } else if (type === 14) {
+                    // common-factor quadratic: c(x+a)(x+b)
+                    let c = this.rand(2, 3), a = this.rand(2, 5), b = this.rand(2, 5);
+                    while (a === b) { b = this.rand(2, 5); }
+                    let s = a + b, pr = a * b;
+                    ansTex = `${c}(${v}+${a})(${v}+${b})`;
+                    ansStr = `${c}(${v}+${a})(${v}+${b})`;
+                    qText = `\\text{Factorize } ${c}${v}^2+${c * s}${v}+${c * pr}`;
+                    opts = [ansTex, `(${v}+${a})(${v}+${b})`, `${c}(${v}+${a})(${v}-${b})`, `${c}(${v}+${c * a})(${v}+${c * b})`];
+                    law = 'common_factor';
+                } else if (type === 15) {
+                    // combined with common factor: a(m^2 x^2 - n^2), e.g. 3x^2 - 27 — classic DSE Paper 1
+                    let a = this.rand(2, 4), m = this.rand(1, 3), n = this.rand(2, 6);
+                    while (m > 1 && this.gcd(m, n) !== 1) { n = this.rand(2, 6); }
+                    const mx = m === 1 ? v : `${m}${v}`;
+                    ansTex = `${a}(${mx}+${n})(${mx}-${n})`;
+                    ansStr = `${a}(${mx}+${n})(${mx}-${n})`;
+                    qText = `\\text{Factorize } ${a * m * m}${v}^2-${a * n * n}`;
+                    opts = [ansTex, `(${mx}+${n})(${mx}-${n})`, `${a}(${mx}+${n})^2`, `${a}(${this.c(m * m, v)}+${n * n})(${this.c(m * m, v)}-${n * n})`];
+                    law = 'common_factor';
+                } else {
+                    // numeric grouping: ax + ka + bx + kb = (a+b)(x+k)
+                    const k = this.rand(2, 5);
+                    ansTex = `(a+b)(x+${k})`;
+                    ansStr = `(a+b)(x+${k})`;
+                    qText = `\\text{Factorize } ax+${k}a+bx+${k}b`;
+                    opts = [ansTex, `(a+b)(x-${k})`, `(a-b)(x+${k})`, `(a+b)(x+${k + 1})`];
+                }
+                
+                return {
+                    instruction: instruction,
+                    paper: (type === 0 || type === 3 || type === 4 || type === 5 || type === 6 || type === 9 || type === 15 || type === 16) ? "Paper 1" : "Paper 2",
+                    text: `$ ${qText} $`, answerStr: ansStr, mcAnswerStr: ansTex,
+                    variables: (type === 5) ? ['a', 'b', 'x', 'y'] : ((type === 10 || type === 11) ? [v, u] : ((type === 16) ? ['a', 'b', 'x'] : [v])),
+                    options: this.shuffle(opts.map(o => `$ ${o} $`)),
+                    firstStepLaw: law
+                };
+            },
+            
+            // --- Level 3: Multi-part (a)(b)(c) Paper 1 style, modelled on DSE P1 Q235-Q249 (part paper pg 70-71) ---
+            generateL3Set: function() {
+                const templates = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+                const chosen = this.shuffle(templates).slice(0, 1)[0];
+                let parts = [];
+                if (chosen === 0) parts = this.setT1();
+                else if (chosen === 1) parts = this.setT2();
+                else if (chosen === 2) parts = this.setT3();
+                else if (chosen === 3) parts = this.setT4();
+                else if (chosen === 4) parts = this.setT5();
+                else if (chosen === 5) parts = this.setT6();
+                else if (chosen === 6) parts = this.setT7();
+                else if (chosen === 7) parts = this.setT8();
+                else if (chosen === 8) parts = this.setT9();
+                else parts = this.setT10();
+                return parts;
+            },
+            
+            // T1: Q241 style — (a) k(m-2n) common factor, (b) cross method sharing (m-2n), (c) difference
+            setT1: function() {
+                const k = this.rand(2, 7);
+                const p = this.rand(1, 3); // (m+pn)(m-2n)
+                const mid = p - 2;
+                const pn = this.c(p, 'n');
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${k}m-${2 * k}n`,
+                    answerStr: `${k}(m-2n)`, mcAnswerStr: `${k}(m-2n)`,
+                    variables: ['m', 'n'], firstStepLaw: 'common_factor',
+                    options: this.shuffle([`${k}(m-2n)`, `${k}(m+2n)`, `(m-2n)`, `${k}(2m-n)`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `m^2${sTerm(mid, 'mn')}-${2 * p}n^2`,
+                    answerStr: `(m+${pn})(m-2n)`, mcAnswerStr: `(m+${pn})(m-2n)`,
+                    variables: ['m', 'n'], firstStepLaw: 'cross_method',
+                    options: this.shuffle([`(m+${pn})(m-2n)`, `(m-${pn})(m-2n)`, `(m+${pn})(m+2n)`, `(m-${pn})(m+2n)`].map(o => `$ ${o} $`))
+                });
+                // (c)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `m^2${sTerm(mid, 'mn')}-${2 * p}n^2${sTerm(-k, 'm')}${sTerm(2 * k, 'n')}`,
+                    answerStr: `(m-2n)(m+${pn}-${k})`, mcAnswerStr: `(m-2n)(m+${pn}-${k})`,
+                    variables: ['m', 'n'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(m-2n)(m+${pn}-${k})`, `(m-2n)(m+${pn}+${k})`, `(m+2n)(m+${pn}-${k})`, `(m-2n)(m-${pn}-${k})`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T2: Q244 style — (a) u^2 m^2 - v^2, (b) n(um-v)(tm+s), (c) difference
+            setT2: function() {
+                let u, t, v, s;
+                do {
+                    u = this.rand(2, 3); t = this.rand(1, 2);
+                    v = this.rand(2, 4); s = this.rand(2, 6);
+                } while (this.gcd(u, v) !== 1 || this.gcd(t, s) !== 1 || (u * s - v * t) === 0);
+                const A = u * t, B = u * s - v * t, C = -v * s; // ut m^2 n + B mn - vs n
+                const ts = this.c(t, 'm');
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${u * u}m^2-${v * v}`,
+                    answerStr: `(${u}m-${v})(${u}m+${v})`, mcAnswerStr: `(${u}m-${v})(${u}m+${v})`,
+                    variables: ['m', 'n'], firstStepLaw: 'diff_squares',
+                    options: this.shuffle([`(${u}m-${v})(${u}m+${v})`, `(${u}m-${v})(${u}m-${v})`, `(${u}m+${v})(${u}m+${v})`, `(${u}m-${v})(m+${v})`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${A}m^2n${sTerm(B, 'mn')}${sTerm(C, 'n')}`,
+                    answerStr: `n(${u}m-${v})(${ts}+${s})`, mcAnswerStr: `n(${u}m-${v})(${ts}+${s})`,
+                    variables: ['m', 'n'], firstStepLaw: 'common_factor',
+                    options: this.shuffle([`n(${u}m-${v})(${ts}+${s})`, `(${u}m-${v})(${ts}+${s})`, `n(${u}m-${v})(${ts}-${s})`, `n(${u}m+${v})(${ts}-${s})`].map(o => `$ ${o} $`))
+                });
+                // (c)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${u * u}m^2-${v * v}${sTerm(-A, 'm^2n')}${sTerm(-B, 'mn')}${sTerm(-C, 'n')}`,
+                    answerStr: `(${u}m-${v})(${u}m+${v}${sTerm(-t, 'mn')}${sTerm(-s, 'n')})`, mcAnswerStr: `(${u}m-${v})(${u}m+${v}${sTerm(-t, 'mn')}${sTerm(-s, 'n')})`,
+                    variables: ['m', 'n'], firstStepLaw: 'use_a',
+                    options: this.shuffle([
+                        `(${u}m-${v})(${u}m+${v}${sTerm(-t, 'mn')}${sTerm(-s, 'n')})`,
+                        `(${u}m-${v})(${u}m+${v}${sTerm(t, 'mn')}${sTerm(s, 'n')})`,
+                        `(${u}m-${v})(${u}m+${v}${sTerm(-t, 'mn')}${sTerm(s, 'n')})`,
+                        `(${u}m+${v})(${u}m-${v}${sTerm(-t, 'mn')}${sTerm(-s, 'n')})`
+                    ].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T3: Q242 style — (a) cross method (x-py)(x-qy), (b) +k(x-qy)
+            setT3: function() {
+                const pairs = [[1, 2], [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]];
+                const [p, q] = pairs[this.rand(0, pairs.length - 1)];
+                const k = this.rand(4, 12);
+                const py = this.c(p, 'y'), qy = this.c(q, 'y');
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `x^2-${p + q}xy+${p * q}y^2`,
+                    answerStr: `(x-${py})(x-${qy})`, mcAnswerStr: `(x-${py})(x-${qy})`,
+                    variables: ['x', 'y'], firstStepLaw: 'cross_method',
+                    options: this.shuffle([`(x-${py})(x-${qy})`, `(x+${py})(x+${qy})`, `(x-${py})(x+${qy})`, `(x+y)(x-${p * q}y)`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `x^2-${p + q}xy+${p * q}y^2${sTerm(k, 'x')}${sTerm(-k * q, 'y')}`,
+                    answerStr: `(x-${qy})(x-${py}+${k})`, mcAnswerStr: `(x-${qy})(x-${py}+${k})`,
+                    variables: ['x', 'y'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(x-${qy})(x-${py}+${k})`, `(x-${py})(x-${qy}+${k})`, `(x-${qy})(x-${py}-${k})`, `(x-${py})(x-${qy}-${k})`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T4: Q238 style — (a) u^2x^2 - v^2y^2, (b) +k(ux-vy)
+            setT4: function() {
+                let u, v, k;
+                do {
+                    u = this.rand(2, 3); v = this.rand(2, 5); k = this.rand(2, 6);
+                } while (this.gcd(u, v) !== 1 || k === u || k === v);
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${u * u}x^2-${v * v}y^2`,
+                    answerStr: `(${u}x-${v}y)(${u}x+${v}y)`, mcAnswerStr: `(${u}x-${v}y)(${u}x+${v}y)`,
+                    variables: ['x', 'y'], firstStepLaw: 'diff_squares',
+                    options: this.shuffle([`(${u}x-${v}y)(${u}x+${v}y)`, `(${u}x-${v}y)(${u}x-${v}y)`, `(${u}x+${v}y)(${u}x+${v}y)`, `(${u}x-${v}y)(x+${v}y)`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${u * u}x^2-${v * v}y^2${sTerm(k * u, 'x')}${sTerm(-k * v, 'y')}`,
+                    answerStr: `(${u}x-${v}y)(${u}x+${v}y+${k})`, mcAnswerStr: `(${u}x-${v}y)(${u}x+${v}y+${k})`,
+                    variables: ['x', 'y'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(${u}x-${v}y)(${u}x+${v}y+${k})`, `(${u}x+${v}y)(${u}x-${v}y+${k})`, `(${u}x-${v}y)(${u}x+${v}y-${k})`, `(${u}x-${v}y)(${u}x-${v}y+${k})`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T5: Q245 style — (a) x^2+dx-ab, (b) x^2(x+a)(x-b)
+            setT5: function() {
+                let a, b;
+                do {
+                    a = this.rand(3, 5); b = this.rand(2, 4);
+                } while (a === b);
+                const d = a - b, pr = a * b;
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `x^2${sTerm(d, 'x')}-${pr}`,
+                    answerStr: `(x+${a})(x-${b})`, mcAnswerStr: `(x+${a})(x-${b})`,
+                    variables: ['x'], firstStepLaw: 'cross_method',
+                    options: this.shuffle([`(x+${a})(x-${b})`, `(x-${a})(x+${b})`, `(x+${a})(x+${b})`, `(x-${a})(x-${b})`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `x^4${sTerm(d, 'x^3')}-${pr}x^2`,
+                    answerStr: `x^2(x+${a})(x-${b})`, mcAnswerStr: `x^2(x+${a})(x-${b})`,
+                    variables: ['x'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`x^2(x+${a})(x-${b})`, `x(x+${a})(x-${b})`, `x^2(x-${a})(x+${b})`, `x^2(x+${a})(x+${b})`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T6: Q240 style — (a) x^2(x+y-c), (b) (x+y-c)(x-1)(x+1)
+            setT6: function() {
+                const c = this.rand(5, 9);
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `x^3+x^2y-${c}x^2`,
+                    answerStr: `x^2(x+y-${c})`, mcAnswerStr: `x^2(x+y-${c})`,
+                    variables: ['x', 'y'], firstStepLaw: 'common_factor',
+                    options: this.shuffle([`x^2(x+y-${c})`, `x(x+y-${c})`, `x^2(x-y-${c})`, `x^2(x+y+${c})`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `x^3+x^2y-${c}x^2-x-y+${c}`,
+                    answerStr: `(x+y-${c})(x-1)(x+1)`, mcAnswerStr: `(x+y-${c})(x-1)(x+1)`,
+                    variables: ['x', 'y'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(x+y-${c})(x-1)(x+1)`, `(x+y-${c})(x-1)^2`, `(x+y-${c})(x+1)^2`, `(x+y+${c})(x-1)(x+1)`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T7: Q243 style — (a) k^2 r^2 (r-2s) common factor, (b) difference → (r-2s)(kr-s)(kr+s)
+            setT7: function() {
+                const k = this.rand(2, 3); // (kr)^2 common factor
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${k * k}r^3-${2 * k * k}r^2s`,
+                    answerStr: `${k * k}r^2(r-2s)`, mcAnswerStr: `${k * k}r^2(r-2s)`,
+                    variables: ['r', 's'], firstStepLaw: 'common_factor',
+                    options: this.shuffle([`${k * k}r^2(r-2s)`, `${k * k}r(r-2s)`, `${k * k}r^2(r-s)`, `r^2(${k * k}r-2s)`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${k * k}r^3-${2 * k * k}r^2s${sTerm(-1, 'rs^2')}${sTerm(2, 's^3')}`,
+                    answerStr: `(r-2s)(${k}r-s)(${k}r+s)`, mcAnswerStr: `(r-2s)(${k}r-s)(${k}r+s)`,
+                    variables: ['r', 's'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(r-2s)(${k}r-s)(${k}r+s)`, `(r-2s)(${k}r-s)^2`, `(r-2s)(${k}r+s)^2`, `(r-2s)(${k * k}r^2-s)`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T8: Q247 style — (a) (ac-b)^2, (b) (pc+d)^2 - (ac-b)^2 = ((p-a)c+d+b)((p+a)c+d-b)
+            setT8: function() {
+                const p = this.rand(4, 5), a = this.rand(2, 3), b = this.rand(1, 2);
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const cA = this.c(p - a, 'c'), cB = this.c(p + a, 'c');
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${a * a}c^2-${2 * a * b}c+${b * b}`,
+                    answerStr: `(${a}c-${b})^2`, mcAnswerStr: `(${a}c-${b})^2`,
+                    variables: ['c'], firstStepLaw: 'perfect_square',
+                    options: this.shuffle([`(${a}c-${b})^2`, `(${a}c+${b})^2`, `(${a}c-${b})(${a}c+${b})`, `(${a}c-${b + 1})^2`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `(${p}c+d)^2-${a * a}c^2${sTerm(2 * a * b, 'c')}-${b * b}`,
+                    answerStr: `(${cA}+d+${b})(${cB}+d-${b})`, mcAnswerStr: `(${cA}+d+${b})(${cB}+d-${b})`,
+                    variables: ['c', 'd'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(${cA}+d+${b})(${cB}+d-${b})`, `(${cA}+d-${b})(${cB}+d+${b})`, `(${cB}+d+${b})(${cB}+d-${b})`, `(${cA}+d+${b})(${cA}+d-${b})`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T9: Q235 style — (a) (m-n)(am+bn), (b) subtract (m-n) → (m-n)(am+bn-1)
+            setT9: function() {
+                let a, b;
+                do {
+                    a = this.rand(3, 4); b = this.rand(1, 3);
+                } while (a === b);
+                const mid = b - a; // may be negative
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${a}m^2${sTerm(mid, 'mn')}-${b}n^2`,
+                    answerStr: `(m-n)(${a}m+${b}n)`, mcAnswerStr: `(m-n)(${a}m+${b}n)`,
+                    variables: ['m', 'n'], firstStepLaw: 'cross_method',
+                    options: this.shuffle([`(m-n)(${a}m+${b}n)`, `(m+n)(${a}m-${b}n)`, `(m-n)(${a}m-${b}n)`, `(m+n)(${a}m+${b}n)`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${a}m^2${sTerm(mid, 'mn')}-${b}n^2-m+n`,
+                    answerStr: `(m-n)(${a}m+${b}n-1)`, mcAnswerStr: `(m-n)(${a}m+${b}n-1)`,
+                    variables: ['m', 'n'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(m-n)(${a}m+${b}n-1)`, `(m-n)(${a}m+${b}n+1)`, `(m+n)(${a}m+${b}n-1)`, `(m-n)(${a}m-${b}n-1)`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            // T10: Q246 style — (a) (px+qy)(rx-sy), (b) t(rx-sy) minus (a) → (rx-sy)(t-px-qy)
+            setT10: function() {
+                const quad = [[3, 2, 2, 1], [3, 1, 2, 1], [2, 3, 3, 1], [2, 1, 3, 2], [3, 2, 2, 3]][this.rand(0, 4)];
+                const [p, q, r, s] = quad;
+                const t = 2 * r;
+                const mid = q * r - p * s; // may be negative
+                const sTerm = (coef, sym) => {
+                    if (coef === 0) return '';
+                    const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
+                    return (coef > 0 ? '+' : '-') + body;
+                };
+                const parts = [];
+                // (a)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${p * r}x^2${sTerm(mid, 'xy')}-${q * s}y^2`,
+                    answerStr: `(${p}x+${q}y)(${r}x-${s}y)`, mcAnswerStr: `(${p}x+${q}y)(${r}x-${s}y)`,
+                    variables: ['x', 'y'], firstStepLaw: 'cross_method',
+                    options: this.shuffle([`(${p}x+${q}y)(${r}x-${s}y)`, `(${p}x-${q}y)(${r}x+${s}y)`, `(${p}x+${q}y)(${r}x+${s}y)`, `(${r}x-${s}y)(${p}x-${q}y)`].map(o => `$ ${o} $`))
+                });
+                // (b)
+                parts.push({
+                    instruction: "Multi-part question — answer the parts in order:",
+                    displayTex: `${t * r}x-${t * s}y-${p * r}x^2${sTerm(-mid, 'xy')}+${q * s}y^2`,
+                    answerStr: `(${r}x-${s}y)(${t}-${p}x-${q}y)`, mcAnswerStr: `(${r}x-${s}y)(${t}-${p}x-${q}y)`,
+                    variables: ['x', 'y'], firstStepLaw: 'use_a',
+                    options: this.shuffle([`(${r}x-${s}y)(${t}-${p}x-${q}y)`, `(${r}x-${s}y)(${t}-${p}x+${q}y)`, `(${r}x+${s}y)(${t}-${p}x-${q}y)`, `(${r}x-${s}y)(${t}+${p}x+${q}y)`].map(o => `$ ${o} $`))
+                });
+                return parts;
+            },
+            
+            gcd: function(a, b) {
+                return b ? this.gcd(b, a % b) : a;
+            }
+        };
+
+        // --- ANSWER CANONICALIZATION (lenient checking) ---
+
+        function canonTerm(t) {
+            t = t.toLowerCase();
+            let sign = t.startsWith('-') ? '-' : '';
+            let body = t.replace(/^[+-]/, '');
+            const m = body.match(/^(\d*)([a-z](?:\^\d+)?)$/);
+            if (m) {
+                const coef = m[1] === '' ? '1' : m[1];
+                return sign + m[2] + (coef === '1' ? '' : '#' + coef);
+            }
+            return sign + body;
+        }
+
+        function canonPoly(str) {
+            let s = str.toLowerCase().replace(/\s+/g, '').replace(/\*/g, '');
+            let terms = s.match(/[+-]?[^+-]+/g) || [s];
+            terms = terms.map(canonTerm);
+            const key = (t) => {
+                const m = t.replace(/^[-+]/, '').match(/^([a-z])(?:\^(\d+))?/);
+                if (!m) return '~';
+                return m[1] + String(1000 - (m[2] ? parseInt(m[2]) : 1)).padStart(4, '0');
+            };
+            terms.sort((a, b) => key(a).localeCompare(key(b)));
+            return terms.join('');
+        }
+
+        function canonFactor(str) {
+            let s = str.toLowerCase().replace(/\s+/g, '').replace(/\*/g, '');
+            s = s.replace(/\(([^()]*)\)\^2/g, '($1)($1)');
+            const groups = s.match(/\(([^()]*)\)/g);
+            if (!groups) return canonPoly(str);
+            let prefix = '';
+            const idx = s.indexOf('(');
+            const closeEnd = s.lastIndexOf(')') + 1;
+            if (idx > 0) prefix = s.slice(0, idx);
+            if (closeEnd < s.length) prefix += s.slice(closeEnd);
+            const inners = groups.map(g => {
+                const inner = g.slice(1, -1);
+                const terms = inner.match(/[+-]?[^+-]+/g) || [inner];
+                const canon = terms.map(canonTerm).sort((a, b) => a.localeCompare(b));
+                return canon.join('');
+            });
+            inners.sort();
+            return prefix + inners.map(i => `(${i})`).join('');
+        }
+
+        // --- CORE GAME LOGIC ---
+
+        function login() {
+            const sClass = document.getElementById('student-class').value.trim().toUpperCase();
+            const sNo = document.getElementById('student-no').value.trim();
+            const sName = document.getElementById('student-name').value.trim();
+
+            if (!sClass || !sNo || !sName) {
+                showToast("Please fill in all details to start.", "error");
+                return;
+            }
+
+            studentProfile = { class: sClass, no: sNo, name: sName };
+            document.getElementById('display-name').textContent = `Welcome, ${sName}`;
+            document.getElementById('display-class').textContent = sClass;
+            document.getElementById('display-no').textContent = sNo;
+
+            loadScores();
+
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            
+            updatePassportUI();
+            showToast(`Welcome aboard, ${sName}!`, "success");
+        }
+
+        function logout() {
+            studentProfile = null;
+            document.getElementById('dashboard-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('student-class').value = '';
+            document.getElementById('student-no').value = '';
+            document.getElementById('student-name').value = '';
+        }
+
+        function selectFormatMode(mode) {
+            selectedFormat = mode;
+            document.querySelectorAll('.format-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`mode-${mode}`).classList.add('active');
+            
+            const descMap = {
+                'all': 'Will mix Multiple Choice & Conventional Fill-in questions automatically.',
+                'mc': 'All questions will be multiple choice.',
+                'fill': 'All questions will require you to type the answer.'
+            };
+            document.getElementById('mode-desc').textContent = descMap[mode];
+        }
+
+        function updatePassportUI() {
+            for (let i = 1; i <= 3; i++) {
+                const statusEl = document.getElementById(`badge-status-${i}`);
+                const iconEl = document.getElementById(`badge-icon-${i}`);
+                const cardEl = document.getElementById(`badge-card-${i}`);
+                
+                if (badgeRecords[`level${i}`]) {
+                    statusEl.textContent = "Completed ✅";
+                    statusEl.className = "text-sm font-semibold text-green-400";
+                    iconEl.textContent = "🏆";
+                    cardEl.classList.add('border-amber-500');
+                } else {
+                    statusEl.textContent = "Not Attempted";
+                    statusEl.className = "text-sm font-semibold text-slate-500";
+                    iconEl.textContent = "🔒";
+                    cardEl.classList.remove('border-amber-500');
+                }
+            }
+            updateScoreboardUI();
+        }
+
+        // --- SCORE BOARD LOGIC ---
+        function getScoreStorageKey() {
+            if (!studentProfile) return null;
+            return `hkdse_fac_score_${studentProfile.class}_${studentProfile.no}_${studentProfile.name}`;
+        }
+
+        function loadScores() {
+            const key = getScoreStorageKey();
+            scoreTotals = { level1: 0, level2: 0, level3: 0 };
+            if (!key) return;
+            try {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    const saved = JSON.parse(raw);
+                    if (saved && typeof saved.level1 === 'number') scoreTotals = saved;
+                }
+            } catch (e) { console.log('loadScores error', e); }
+        }
+
+        function saveScores() {
+            const key = getScoreStorageKey();
+            if (!key) return;
+            try {
+                localStorage.setItem(key, JSON.stringify(scoreTotals));
+            } catch (e) { console.log('saveScores error', e); }
+        }
+
+        function updateScoreboardUI() {
+            document.getElementById('score-1').textContent = scoreTotals.level1;
+            document.getElementById('score-2').textContent = scoreTotals.level2;
+            document.getElementById('score-3').textContent = scoreTotals.level3;
+            document.getElementById('total-marks').textContent = scoreTotals.level1 + scoreTotals.level2 + scoreTotals.level3;
+        }
+
+        // Marks for the CURRENT attempt: full minus (hearts lost × per-heart)
+        function currentAttemptMarks() {
+            const cfg = MARKS[currentLevel];
+            if (!cfg) return 0;
+            const heartsLost = Math.max(0, 3 - lives);
+            return Math.max(0, cfg.full - heartsLost * cfg.perHeart);
+        }
+
+        function updateLiveScore() {
+            const el = document.getElementById('live-score');
+            if (el) el.textContent = currentAttemptMarks();
+        }
+
+        function resetBadges() {
+            if(confirm("Are you sure you want to reset your progress and marks?")) {
+                badgeRecords = { level1: false, level2: false, level3: false };
+                levelStats = { level1: { correct: 0, total: 0 }, level2: { correct: 0, total: 0 }, level3: { correct: 0, total: 0 } };
+                scoreTotals = { level1: 0, level2: 0, level3: 0 };
+                saveScores();
+                updatePassportUI();
+                showToast("Progress and marks reset.", "info");
+            }
+        }
+
+        function startGame(level) {
+            currentLevel = level;
+            document.getElementById('dashboard-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            const levelColors = ['text-green-400', 'text-amber-400', 'text-red-400'];
+            document.getElementById('level-indicator').className = `font-bold ${levelColors[level-1]}`;
+            document.getElementById('level-indicator').textContent = `Level ${level}`;
+
+            lives = 3;
+            currentQuestionIndex = 0;
+            currentQuestions = [];
+            currentSets = [];
+            currentSetIndex = 0;
+            activePart = null;
+            updateLiveScore();
+            
+            if (level === 3) {
+                // Level 3: 5 multi-part question sets; each set shown as (a)(b)(c) blocks on one page
+                const usedTexts = new Set();
+                const usedOpts = new Set();
+                const usedAns = new Set();
+                for (let i = 0; i < 5; i++) {
+                    let parts = null, tKey = null, oKey = null, aKey = null, tries = 0;
+                    do {
+                        parts = MathGen.generateL3Set();
+                        tKey = parts.map(p => p.displayTex).join('|');
+                        oKey = parts.map(p => [...p.options].sort().join('~')).join('|');
+                        aKey = parts.map(p => p.answerStr).join('|');
+                        tries++;
+                    } while ((usedTexts.has(tKey) || usedOpts.has(oKey) || usedAns.has(aKey)) && tries < 100);
+                    usedTexts.add(tKey);
+                    usedOpts.add(oKey);
+                    usedAns.add(aKey);
+                    parts.forEach((part, pi) => {
+                        part.setNo = i + 1;
+                        part.partIdx = pi;
+                        part.partLabel = ['(a)', '(b)', '(c)'][pi];
+                        part.paper = 'Paper 1';
+                        part.done = false;
+                        // one answer format per whole set for consistency
+                        part.mode = (selectedFormat === 'all') ? (Math.random() > 0.5 ? 'mc' : 'fill') : selectedFormat;
+                    });
+                    currentSets.push(parts);
+                }
+                updateLivesUI();
+                renderSet();
+                return;
+            }
+            
+            // Levels 1 & 2: 10 single questions (no duplicate questions, MC options or answers in a game)
+            const usedTexts = new Set();
+            const usedOpts = new Set();
+            const usedAns = new Set();
+            for(let i=0; i<10; i++) {
+                let q = null, tKey = null, oKey = null, aKey = null, tries = 0;
+                do {
+                    q = (level === 1) ? MathGen.generateL1() : MathGen.generateL2();
+                    tKey = q.text;
+                    oKey = [...q.options].sort().join('~');
+                    aKey = q.answerStr;
+                    tries++;
+                } while ((usedTexts.has(tKey) || usedOpts.has(oKey) || usedAns.has(aKey)) && tries < 300);
+                usedTexts.add(tKey);
+                usedOpts.add(oKey);
+                usedAns.add(aKey);
+                currentQuestions.push(q);
+            }
+            
+            updateLivesUI();
+            renderQuestion();
+        }
+
+        function updateLivesUI() {
+            const container = document.getElementById('lives-container');
+            container.innerHTML = '';
+            for (let i = 0; i < lives; i++) {
+                container.innerHTML += '<span class="heart-bounce">❤️</span>';
+            }
+            for (let i = lives; i < 3; i++) {
+                container.innerHTML += '<span class="opacity-30 grayscale">❤️</span>';
+            }
+        }
+
+        function renderQuestion() {
+            document.getElementById('q-counter').textContent = `${currentQuestionIndex + 1}/${currentQuestions.length}`;
+            const q = currentQuestions[currentQuestionIndex];
+            
+            // Ensure single-question UI is visible and L3 area hidden
+            document.getElementById('l3-area').classList.add('hidden');
+            document.getElementById('question-display').classList.remove('hidden');
+            
+            const displayEl = document.getElementById('question-display');
+            displayEl.innerHTML = q.text;
+            
+            document.getElementById('question-instruction').textContent = q.instruction;
+            document.getElementById('paper-hint').textContent = 
+                (q.paper === 'Paper 1') ? 'DSE Paper 1 Style · Long Question' : 'DSE Paper 2 Style · MCQ';
+            
+            const partLabelEl = document.getElementById('part-label');
+            partLabelEl.textContent = '';
+            partLabelEl.classList.add('hidden');
+            
+            // Determine Mode for this specific question
+            if (selectedFormat === 'all') {
+                currentQuestionMode = Math.random() > 0.5 ? 'mc' : 'fill';
+            } else {
+                currentQuestionMode = selectedFormat;
+            }
+
+            const mcArea = document.getElementById('mc-options');
+            const fillArea = document.getElementById('conventional-area');
+            const hint = document.getElementById('format-hint');
+
+            if (currentQuestionMode === 'mc') {
+                mcArea.classList.remove('hidden');
+                fillArea.classList.add('hidden');
+                hint.textContent = "Multiple Choice Mode";
+                
+                const btns = mcArea.querySelectorAll('button');
+                btns.forEach((btn, idx) => {
+                    btn.innerHTML = q.options[idx];
+                });
+            } else {
+                mcArea.classList.add('hidden');
+                fillArea.classList.remove('hidden');
+                hint.textContent = "Fill-in Mode";
+                
+                document.getElementById('conventional-input').value = '';
+                document.getElementById('math-preview').innerHTML = '\\( \\text{Empty} \\)';
+                
+                // Inject helper buttons based on variables
+                const helperBox = document.getElementById('helper-buttons');
+                helperBox.innerHTML = '';
+                q.variables.forEach(v => {
+                    helperBox.innerHTML += `<button onclick="insertAtCursor('${v}')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-amber-200 font-mono text-sm transition">${v}</button>`;
+                });
+                helperBox.innerHTML += `<button onclick="insertAtCursor('^')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-white font-mono text-sm transition">^</button>`;
+                helperBox.innerHTML += `<button onclick="insertAtCursor('(')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-white font-mono text-sm transition">(</button>`;
+                helperBox.innerHTML += `<button onclick="insertAtCursor(')')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-white font-mono text-sm transition">)</button>`;
+                helperBox.innerHTML += `<button onclick="insertAtCursor('+')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-white font-mono text-sm transition">+</button>`;
+                helperBox.innerHTML += `<button onclick="insertAtCursor('-')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-white font-mono text-sm transition">-</button>`;
+            }
+
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // --- Level 3: render the whole question set as (a)(b)(c) blocks on one page ---
+        function renderSet() {
+            const set = currentSets[currentSetIndex];
+            document.getElementById('q-counter').textContent = `Set ${currentSetIndex + 1}/${currentSets.length}`;
+            document.getElementById('question-instruction').textContent = "Factorize the expressions — answer all parts:";
+            document.getElementById('paper-hint').textContent = 'DSE Paper 1 Style · Multi-part Question';
+            document.getElementById('format-hint').textContent = set[0].mode === 'mc' ? 'Multiple Choice Mode' : 'Fill-in Mode';
+            
+            const partLabelEl = document.getElementById('part-label');
+            partLabelEl.textContent = '';
+            partLabelEl.classList.add('hidden');
+            
+            // Hide single-question UI, show L3 area
+            document.getElementById('question-display').classList.add('hidden');
+            document.getElementById('mc-options').classList.add('hidden');
+            document.getElementById('conventional-area').classList.add('hidden');
+            const l3Area = document.getElementById('l3-area');
+            l3Area.classList.remove('hidden');
+            
+            const blocksEl = document.getElementById('l3-blocks');
+            blocksEl.innerHTML = '';
+            
+            set.forEach((part, pi) => {
+                const block = document.createElement('div');
+                block.id = `l3-block-${pi}`;
+                block.className = `bg-slate-800/60 border ${part.done ? 'border-green-500/70' : 'border-slate-700'} rounded-2xl p-4 transition-all duration-300`;
+                blocksEl.appendChild(block);
+                rebuildL3Block(pi);
+            });
+            
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function insertL3Char(pi, ch) {
+            const f = document.getElementById(`l3-input-${pi}`);
+            const start = f.selectionStart ?? f.value.length;
+            const end = f.selectionEnd ?? f.value.length;
+            f.value = f.value.substring(0, start) + ch + f.value.substring(end, f.value.length);
+            const pos = start + ch.length;
+            f.setSelectionRange(pos, pos);
+            f.focus();
+            updateL3Preview(pi);
+        }
+
+        function updateL3Preview(pi) {
+            const input = document.getElementById(`l3-input-${pi}`).value;
+            const previewBox = document.getElementById(`l3-preview-${pi}`);
+            if (!previewBox) return;
+            if (!input.trim()) {
+                previewBox.innerHTML = '\\( \\text{Empty} \\)';
+                if (window.MathJax) MathJax.typesetPromise([previewBox]);
+                return;
+            }
+            let texStr = input;
+            if (texStr.includes('/')) {
+                const parts = texStr.split('/');
+                if (parts.length === 2) texStr = `\\frac{${parts[0]}}{${parts[1]}}`;
+            }
+            texStr = texStr.replace(/\^([a-zA-Z0-9]+)/g, '^{$1}');
+            previewBox.innerHTML = `$ ${texStr} $`;
+            if (window.MathJax) MathJax.typesetPromise([previewBox]).catch(() => {});
+        }
+
+        function submitSetPartMC(pi, btnIdx) {
+            const set = currentSets[currentSetIndex];
+            const part = set[pi];
+            if (part.done) return;
+            activePart = part;
+            const isCorrect = (part.options[btnIdx] === `$ ${part.mcAnswerStr} $`);
+            processSetAnswer(pi, isCorrect);
+        }
+
+        function submitSetPartFill(pi) {
+            const set = currentSets[currentSetIndex];
+            const part = set[pi];
+            if (part.done) return;
+            activePart = part;
+            
+            const rawInput = document.getElementById(`l3-input-${pi}`).value;
+            if (!rawInput.trim()) {
+                showToast("Please enter an answer.", "info");
+                return;
+            }
+            const cleanInput = rawInput.toLowerCase().replace(/\s+/g, '').replace(/\*/g, '');
+            const isCorrect = checkFillAnswer(cleanInput, part);
+            processSetAnswer(pi, isCorrect);
+        }
+
+        function rebuildL3Block(pi) {
+            const part = currentSets[currentSetIndex][pi];
+            const block = document.getElementById(`l3-block-${pi}`);
+            if (!block) return;
+            let inner = '';
+            inner += `<div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-bold text-emerald-400">Part ${part.partLabel}</span>
+                <span id="l3-status-${pi}" class="${part.done ? 'text-green-400' : 'text-slate-400'} text-sm font-semibold">${part.done ? '✓ Correct' : ''}</span>
+            </div>`;
+            inner += `<div id="l3-q-${pi}" class="text-xl sm:text-2xl text-white mb-3 text-center overflow-x-auto min-h-[40px] flex items-center justify-center">$ \\text{Factorize } ${part.displayTex} $</div>`;
+            if (part.done) {
+                inner += `<div class="text-center text-green-400 text-sm py-2 font-semibold">Answer: $ ${part.mcAnswerStr} $</div>`;
+            } else if (part.mode === 'mc') {
+                inner += `<div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="l3-mc-${pi}">`;
+                part.options.forEach((o, bi) => {
+                    inner += `<button onclick="submitSetPartMC(${pi}, ${bi})" class="option-btn bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl p-3 text-lg transition-all shadow-md active:scale-95 min-h-[56px] flex items-center justify-center">${o}</button>`;
+                });
+                inner += `</div>`;
+            } else {
+                inner += `
+                <div class="flex gap-2 w-full">
+                    <input type="text" id="l3-input-${pi}" placeholder="e.g. (x+2)(x+3)" oninput="updateL3Preview(${pi})" onkeypress="if(event.key==='Enter')submitSetPartFill(${pi})" class="flex-1 bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-lg font-mono text-white outline-none focus:border-amber-500 transition shadow-inner">
+                    <button onclick="submitSetPartFill(${pi})" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 rounded-lg text-base transition shadow-md active:scale-95">Submit</button>
+                </div>
+                <div id="l3-helpers-${pi}" class="flex flex-wrap gap-2 justify-center w-full mt-2">`;
+                part.variables.forEach(v => {
+                    inner += `<button onclick="insertL3Char(${pi},'${v}')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-amber-200 font-mono text-sm transition">${v}</button>`;
+                });
+                ['^','(',')','+','-'].forEach(op => {
+                    inner += `<button onclick="insertL3Char(${pi},'${op}')" class="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-white font-mono text-sm transition">${op}</button>`;
+                });
+                inner += `</div>
+                <div class="w-full p-3 bg-slate-900/60 border border-slate-700 rounded-lg text-center mt-2">
+                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1 block">Live Math Preview</span>
+                    <div id="l3-preview-${pi}" class="text-lg text-slate-300 min-h-[28px] flex items-center justify-center">\\( \\text{Empty} \\)</div>
+                </div>`;
+            }
+            block.innerHTML = inner;
+            block.classList.remove('border-slate-700');
+            block.classList.add(part.done ? 'border-green-500/70' : 'border-slate-700');
+            if (window.MathJax) MathJax.typesetPromise([block]);
+        }
+
+        function processSetAnswer(pi, isCorrect) {
+            levelStats[`level${currentLevel}`].total++;
+            
+            if (isCorrect) {
+                levelStats[`level${currentLevel}`].correct++;
+                showToast(`Part ${currentSets[currentSetIndex][pi].partLabel} correct! Awesome job.`, "success");
+                
+                const set = currentSets[currentSetIndex];
+                set[pi].done = true;
+                rebuildL3Block(pi);
+                
+                if (set.every(p => p.done)) {
+                    setTimeout(() => {
+                        currentSetIndex++;
+                        if (currentSetIndex >= currentSets.length) {
+                            winGame();
+                        } else {
+                            renderSet();
+                        }
+                    }, 700);
+                }
+            } else {
+                showWrongReflectionModal();
+            }
+        }
+
+        function insertAtCursor(myValue) {
+            const myField = document.getElementById('conventional-input');
+            if (document.selection) {
+                myField.focus();
+                sel = document.selection.createRange();
+                sel.text = myValue;
+            } else if (myField.selectionStart || myField.selectionStart == '0') {
+                var startPos = myField.selectionStart;
+                var endPos = myField.selectionEnd;
+                myField.value = myField.value.substring(0, startPos) + myValue + myField.value.substring(endPos, myField.value.length);
+                myField.selectionStart = startPos + myValue.length;
+                myField.selectionEnd = startPos + myValue.length;
+            } else {
+                myField.value += myValue;
+            }
+            myField.focus();
+            updateLivePreview();
+        }
+
+        function handleEnter(e) {
+            if(e.key === 'Enter') submitFillAnswer();
+        }
+
+        function submitMCAnswer(btnIndex) {
+            const q = currentQuestions[currentQuestionIndex];
+            const selectedText = q.options[btnIndex];
+            const isCorrect = (selectedText === `$ ${q.mcAnswerStr} $`);
+            processAnswer(isCorrect);
+        }
+
+        // For perfect-square answers like (x+3)^2, only the squared notation is accepted.
+        function checkFillAnswer(cleanInput, q) {
+            const wantSquare = q.answerStr.includes('^2');
+            if (wantSquare && !cleanInput.includes('^2')) return false;
+            return canonFactor(cleanInput) === canonFactor(q.answerStr);
+        }
+
+        function submitFillAnswer() {
+            const q = currentQuestions[currentQuestionIndex];
+            const rawInput = document.getElementById('conventional-input').value;
+            
+            if(!rawInput.trim()) {
+                showToast("Please enter an answer.", "info");
+                return;
+            }
+
+            const cleanInput = rawInput.toLowerCase().replace(/\s+/g, '').replace(/\*/g, '');
+            const isCorrect = checkFillAnswer(cleanInput, q);
+            processAnswer(isCorrect);
+        }
+
+        function processAnswer(isCorrect) {
+            // Track total attempts for the current level
+            levelStats[`level${currentLevel}`].total++;
+            
+            if (isCorrect) {
+                // Track correct attempts
+                levelStats[`level${currentLevel}`].correct++;
+                showToast("Correct! Awesome job.", "success");
+                currentQuestionIndex++;
+                
+                if (currentQuestionIndex >= currentQuestions.length) {
+                    winGame();
+                } else {
+                    renderQuestion();
+                }
+            } else {
+                // Instantly pop up the wrong reflection modal before deducting life
+                showWrongReflectionModal();
+            }
+        }
+
+        function showWrongReflectionModal() {
+            const modal = document.getElementById('wrong-reflection-modal');
+            modal.classList.remove('hidden');
+            if(window.MathJax) MathJax.typesetPromise([modal]);
+        }
+
+        function submitWrongReflection(selectedLaw) {
+            const q = (currentLevel === 3) ? activePart : currentQuestions[currentQuestionIndex];
+            const actualLaw = q.firstStepLaw;
+
+            const isLawCorrect = (selectedLaw === actualLaw);
+            if (actualLaw === 'use_a' && selectedLaw !== '') isLawCorrect = true;
+
+            document.getElementById('wrong-reflection-modal').classList.add('hidden');
+
+            if (isLawCorrect) {
+                showToast("Good reflection! You identified the correct technique to start with.", "success");
+            } else {
+                showToast("Not quite! Remember to check the Formula sheet or ask AI Tutor.", "error");
+            }
+
+            // Deduct life and shake the game screen to indicate a mistake
+            lives--;
+            updateLivesUI();
+            updateLiveScore();
+            showWrongFeedback();
+            
+            const gameArea = document.getElementById('main-game-area');
+            gameArea.classList.add('shake');
+            setTimeout(() => gameArea.classList.remove('shake'), 400);
+
+            if (lives <= 0) {
+                setTimeout(() => {
+                    showToast("Mission Failed. Out of lives!", "error");
+                    quitGame();
+                }, 500);
+            }
+        }
+
+        function winGame() {
+            badgeRecords[`level${currentLevel}`] = true;
+            const earned = currentAttemptMarks();
+            scoreTotals[`level${currentLevel}`] += earned;
+            saveScores();
+            showToast(`Level ${currentLevel} Complete! +${earned} marks earned! 🏆`, "success");
+            quitGame();
+        }
+
+        function quitGame() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            updatePassportUI();
+        }
+
+        // Live Math Preview for Fill-in Mode
+        function updateLivePreview() {
+            const input = document.getElementById('conventional-input').value;
+            const previewBox = document.getElementById('math-preview');
+            
+            if(!input.trim()) {
+                previewBox.innerHTML = '\\( \\text{Empty} \\)';
+                if(window.MathJax) MathJax.typesetPromise([previewBox]);
+                return;
+            }
+
+            let texStr = input;
+            
+            // Simple parsing: a/b -> \frac{a}{b}
+            if(texStr.includes('/')) {
+                const parts = texStr.split('/');
+                if(parts.length === 2) {
+                    texStr = `\\frac{${parts[0]}}{${parts[1]}}`;
+                }
+            }
+            
+            // Reformat x^2 -> x^{2} for safety visually (MathJax handles x^2 fine mostly)
+            texStr = texStr.replace(/\^([a-zA-Z0-9]+)/g, '^{$1}');
+            
+            previewBox.innerHTML = `$ ${texStr} $`;
+            if (window.MathJax) {
+                MathJax.typesetPromise([previewBox]).catch(err => console.log('MathJax Error:', err));
+            }
+        }
+
+        // --- HELPER UI FUNCTIONS ---
+
+        function showToast(message, type) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        function showWrongFeedback() {
+            const el = document.getElementById('feedback-toast');
+            el.classList.remove('hidden');
+            setTimeout(() => {
+                el.classList.add('hidden');
+            }, 3000);
+        }
+
+        function toggleCheatSheet() {
+            const modal = document.getElementById('cheat-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function closeAITutor() {
+            document.getElementById('ai-tutor-modal').classList.add('hidden');
+        }
+
+        function askAITutor() {
+            let q;
+            if (currentLevel === 3) {
+                q = activePart;
+                if (!q) {
+                    q = currentSets[currentSetIndex].find(p => !p.done) || currentSets[currentSetIndex][0];
+                }
+            } else {
+                q = currentQuestions[currentQuestionIndex];
+            }
+            let hint = "";
+            switch (q.firstStepLaw) {
+                case 'expand_bracket':
+                    hint = "Expand by multiplying every term in the first bracket with every term in the second: $(x+a)(x+b) = x^2 + bx + ax + ab$. Then collect the like terms (middle terms).";
+                    break;
+                case 'common_factor':
+                    hint = "Find the largest factor common to ALL terms and take it out: $ax + ay = a(x+y)$. For grouping questions, pair up the terms that share the same factor first.";
+                    break;
+                case 'cross_method':
+                    hint = "Find two numbers whose product equals the constant term and whose sum equals the coefficient of $x$: $(x+a)(x+b) = x^2 + (a+b)x + ab$.";
+                    break;
+                case 'diff_squares':
+                    hint = "Use the identity $a^2 - b^2 = (a+b)(a-b)$. Check whether each term is a perfect square first (e.g. $9x^2 = (3x)^2$).";
+                    break;
+                case 'perfect_square':
+                    hint = "Check if it matches $a^2 \\pm 2ab + b^2 = (a \\pm b)^2$. The middle term must be exactly $2ab$.";
+                    break;
+                case 'use_a':
+                    hint = "This is part (b)! Use your answer from part (a) — look for a common bracket factor that appears in both parts, then factor it out.";
+                    break;
+                default:
+                    hint = "Remember the basics: $a(x+y)=ax+ay$ and $a^2-b^2=(a+b)(a-b)$.";
+            }
+
+            document.getElementById('ai-content-area').innerHTML = `
+                <div class="bg-slate-800/80 p-5 rounded-lg border border-purple-500/30 mb-4 shadow-inner">
+                    <p class="text-purple-300 font-semibold mb-2 text-lg">🤖 AI Hint specifically for this question:</p>
+                    <p class="text-white text-base">${hint}</p>
+                </div>
+                <div class="bg-slate-800/80 p-5 rounded-lg border border-slate-600 shadow-inner">
+                    <p class="text-amber-400 font-semibold mb-2 text-lg">💡 General Checklist:</p>
+                    <ul class="list-disc list-inside space-y-2 text-slate-300">
+                        <li>Expansion: did you multiply EVERY term in the first bracket with EVERY term in the second?</li>
+                        <li>Factorization: is your answer COMPLETE (can you take out any more common factors)?</li>
+                        <li>Always expand your factorization back to check it equals the original expression!</li>
+                    </ul>
+                </div>
+            `;
+            document.getElementById('ai-tutor-modal').classList.remove('hidden');
+            if(window.MathJax) MathJax.typesetPromise();
+        }
+
+        // --- REFLECTION & SUBMISSION LOGIC ---
+
+        function submitToTeacher() {
+            if (!studentProfile) return;
+            
+            const btn = document.getElementById('btn-submit-teacher');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Sending... ⏳';
+            btn.disabled = true;
+
+            const getPercent = (lvl) => {
+                const s = levelStats[lvl];
+                return s.total > 0 ? Math.round((s.correct / s.total) * 100) + "%" : "N/A";
+            };
+
+            const payload = {
+                timestamp: new Date().toISOString(),
+                topic: 'Factorization & Expansion',
+                class: studentProfile.class,
+                no: studentProfile.no,
+                name: studentProfile.name,
+                level1: badgeRecords.level1,
+                level1Percent: getPercent('level1'),
+                level1Marks: scoreTotals.level1,
+                level2: badgeRecords.level2,
+                level2Percent: getPercent('level2'),
+                level2Marks: scoreTotals.level2,
+                level3: badgeRecords.level3,
+                level3Percent: getPercent('level3'),
+                level3Marks: scoreTotals.level3,
+                totalMarks: scoreTotals.level1 + scoreTotals.level2 + scoreTotals.level3
+            };
+
+            // Using no-cors fetch to ping the GAS macro. 
+            // NOTE: Google Apps Script needs to handle POST requests in doPost(e).
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                showToast("Data submitted to teacher successfully!", "success");
+            })
+            .catch(err => {
+                console.error(err);
+                // Even on error due to CORS in some setups, it often goes through if macro is open.
+                showToast("Submission might have failed. Check console.", "error");
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
