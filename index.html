@@ -1035,6 +1035,8 @@
                     a = this.rand(3, 4); b = this.rand(1, 3);
                 } while (a === b);
                 const mid = b - a; // may be negative
+                const bn = this.c(b, 'n');
+                const b2 = this.c(b, 'n^2');
                 const sTerm = (coef, sym) => {
                     if (coef === 0) return '';
                     const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
@@ -1044,18 +1046,18 @@
                 // (a)
                 parts.push({
                     instruction: "Multi-part question — answer the parts in order:",
-                    displayTex: `${a}m^2${sTerm(mid, 'mn')}-${b}n^2`,
-                    answerStr: `(m-n)(${a}m+${b}n)`, mcAnswerStr: `(m-n)(${a}m+${b}n)`,
+                    displayTex: `${a}m^2${sTerm(mid, 'mn')}-${b2}`,
+                    answerStr: `(m-n)(${a}m+${bn})`, mcAnswerStr: `(m-n)(${a}m+${bn})`,
                     variables: ['m', 'n'], firstStepLaw: 'cross_method',
-                    options: this.shuffle([`(m-n)(${a}m+${b}n)`, `(m+n)(${a}m-${b}n)`, `(m-n)(${a}m-${b}n)`, `(m+n)(${a}m+${b}n)`].map(o => `$ ${o} $`))
+                    options: this.shuffle([`(m-n)(${a}m+${bn})`, `(m+n)(${a}m-${bn})`, `(m-n)(${a}m-${bn})`, `(m+n)(${a}m+${bn})`].map(o => `$ ${o} $`))
                 });
                 // (b)
                 parts.push({
                     instruction: "Multi-part question — answer the parts in order:",
-                    displayTex: `${a}m^2${sTerm(mid, 'mn')}-${b}n^2-m+n`,
-                    answerStr: `(m-n)(${a}m+${b}n-1)`, mcAnswerStr: `(m-n)(${a}m+${b}n-1)`,
+                    displayTex: `${a}m^2${sTerm(mid, 'mn')}-${b2}-m+n`,
+                    answerStr: `(m-n)(${a}m+${bn}-1)`, mcAnswerStr: `(m-n)(${a}m+${bn}-1)`,
                     variables: ['m', 'n'], firstStepLaw: 'use_a',
-                    options: this.shuffle([`(m-n)(${a}m+${b}n-1)`, `(m-n)(${a}m+${b}n+1)`, `(m+n)(${a}m+${b}n-1)`, `(m-n)(${a}m-${b}n-1)`].map(o => `$ ${o} $`))
+                    options: this.shuffle([`(m-n)(${a}m+${bn}-1)`, `(m-n)(${a}m+${bn}+1)`, `(m+n)(${a}m+${bn}-1)`, `(m-n)(${a}m-${bn}-1)`].map(o => `$ ${o} $`))
                 });
                 return parts;
             },
@@ -1066,6 +1068,8 @@
                 const [p, q, r, s] = quad;
                 const t = 2 * r;
                 const mid = q * r - p * s; // may be negative
+                const qy = this.c(q, 'y'), sy = this.c(s, 'y');
+                const qsy2 = this.c(q * s, 'y^2');
                 const sTerm = (coef, sym) => {
                     if (coef === 0) return '';
                     const body = sym === '' ? String(Math.abs(coef)) : `${Math.abs(coef) === 1 ? '' : Math.abs(coef)}${sym}`;
@@ -1075,18 +1079,18 @@
                 // (a)
                 parts.push({
                     instruction: "Multi-part question — answer the parts in order:",
-                    displayTex: `${p * r}x^2${sTerm(mid, 'xy')}-${q * s}y^2`,
-                    answerStr: `(${p}x+${q}y)(${r}x-${s}y)`, mcAnswerStr: `(${p}x+${q}y)(${r}x-${s}y)`,
+                    displayTex: `${p * r}x^2${sTerm(mid, 'xy')}-${qsy2}`,
+                    answerStr: `(${p}x+${qy})(${r}x-${sy})`, mcAnswerStr: `(${p}x+${qy})(${r}x-${sy})`,
                     variables: ['x', 'y'], firstStepLaw: 'cross_method',
-                    options: this.shuffle([`(${p}x+${q}y)(${r}x-${s}y)`, `(${p}x-${q}y)(${r}x+${s}y)`, `(${p}x+${q}y)(${r}x+${s}y)`, `(${r}x-${s}y)(${p}x-${q}y)`].map(o => `$ ${o} $`))
+                    options: this.shuffle([`(${p}x+${qy})(${r}x-${sy})`, `(${p}x-${qy})(${r}x+${sy})`, `(${p}x+${qy})(${r}x+${sy})`, `(${r}x-${sy})(${p}x-${qy})`].map(o => `$ ${o} $`))
                 });
                 // (b)
                 parts.push({
                     instruction: "Multi-part question — answer the parts in order:",
-                    displayTex: `${t * r}x-${t * s}y-${p * r}x^2${sTerm(-mid, 'xy')}+${q * s}y^2`,
-                    answerStr: `(${r}x-${s}y)(${t}-${p}x-${q}y)`, mcAnswerStr: `(${r}x-${s}y)(${t}-${p}x-${q}y)`,
+                    displayTex: `${t * r}x-${t * s}y-${p * r}x^2${sTerm(-mid, 'xy')}+${qsy2}`,
+                    answerStr: `(${r}x-${sy})(${t}-${p}x-${qy})`, mcAnswerStr: `(${r}x-${sy})(${t}-${p}x-${qy})`,
                     variables: ['x', 'y'], firstStepLaw: 'use_a',
-                    options: this.shuffle([`(${r}x-${s}y)(${t}-${p}x-${q}y)`, `(${r}x-${s}y)(${t}-${p}x+${q}y)`, `(${r}x+${s}y)(${t}-${p}x-${q}y)`, `(${r}x-${s}y)(${t}+${p}x+${q}y)`].map(o => `$ ${o} $`))
+                    options: this.shuffle([`(${r}x-${sy})(${t}-${p}x-${qy})`, `(${r}x-${sy})(${t}-${p}x+${qy})`, `(${r}x+${sy})(${t}-${p}x-${qy})`, `(${r}x-${sy})(${t}+${p}x+${qy})`].map(o => `$ ${o} $`))
                 });
                 return parts;
             },
