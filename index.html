@@ -1662,7 +1662,7 @@
             const q = (currentLevel === 3) ? activePart : currentQuestions[currentQuestionIndex];
             const actualLaw = q.firstStepLaw;
 
-            const isLawCorrect = (selectedLaw === actualLaw);
+            let isLawCorrect = (selectedLaw === actualLaw);
             if (actualLaw === 'use_a' && selectedLaw !== '') isLawCorrect = true;
 
             document.getElementById('wrong-reflection-modal').classList.add('hidden');
