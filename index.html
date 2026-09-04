@@ -388,7 +388,7 @@
     <script>
         // Deployed Google Apps Script Web App URL
         const GOOGLE_SCRIPT_URL =
-            'https://script.google.com/macros/s/AKfycbxc9JmzoGrMq8VV14EipQ8nlTaLV9F4Ojs87nSO22bxy9rJV31-kluP1pw3s-qHX1GK/exec';
+            'https://script.google.com/macros/s/AKfycbzIabw9ioY8rLwZKpDwaCtimNRny3qA0PIcOmZjfiU/dev';
 
         let studentProfile = null;
         let badgeRecords = { level1: false, level2: false, level3: false };
@@ -1850,23 +1850,27 @@
                 totalMarks: scoreTotals.level1 + scoreTotals.level2 + scoreTotals.level3
             };
 
-            // Using no-cors fetch to ping the GAS macro. 
-            // NOTE: Google Apps Script needs to handle POST requests in doPost(e).
+            // Send as text/plain (simple request, no CORS preflight) so we can read the
+            // Apps Script JSON response and confirm the row was actually written.
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
+                mode: 'cors',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'text/plain;charset=UTF-8',
                 },
                 body: JSON.stringify(payload)
             })
-            .then(() => {
-                showToast("Data submitted to teacher successfully!", "success");
+            .then(resp => resp.json())
+            .then(data => {
+                if (data && data.status === 'success') {
+                    showToast("Data submitted to teacher successfully!", "success");
+                } else {
+                    showToast("Server replied but data not saved: " + (data && data.message ? data.message : 'unknown error'), "error");
+                }
             })
             .catch(err => {
                 console.error(err);
-                // Even on error due to CORS in some setups, it often goes through if macro is open.
-                showToast("Submission might have failed. Check console.", "error");
+                showToast("Submission failed. Check your internet / Apps Script deployment.", "error");
             })
             .finally(() => {
                 btn.innerHTML = originalText;
