@@ -393,7 +393,23 @@
         // Deployed Google Apps Script Web App URL
         const GOOGLE_SCRIPT_URL =
             'https://script.google.com/macros/s/AKfycbxpmwJ_BmXakqRHiHr5N57z6P4GPI_m_vkyIy7T9chnO4pbuH_aVrD0RUsj5nlYOOwY/exec';
-        const APP_VERSION = '1'
+                const APP_VERSION = '1';
+        (function watchAppVersion() {
+            let file = (location.pathname.split('/').pop() || '').split('?')[0];
+            if (!file || !file.endsWith('.html')) file = 'index.html';
+            const check = () => {
+                fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data[file] && data[file] !== APP_VERSION) location.reload();
+                    })
+                    .catch(() => {});
+            };
+            setInterval(check, 60000);
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') check();
+            });
+        })();
 
         let studentProfile = null;
         let badgeRecords = { level1: false, level2: false, level3: false };
